@@ -32,3 +32,26 @@ h1 {
 #closeButton {
   margin: 15px 6px 6px;
 }
+
+.gwt-AbsolutePanel {
+}
+.gwt-AbsolutePanel .topCenter {
+  border-top: 1px solid #bbb;
+  line-height: 0px;
+}
+.gwt-AbsolutePanel .bottomCenter {
+  border-bottom: 1px solid #bbb;
+  line-height: 0px;
+}
+
+
+.cw-DockPanel td {
+  border: 1px solid #BBBBBB;
+  padding: 3px;
+}
+
+.gwt-ScrollPanel td {
+  border: 1px solid #BBBBBB;
+  padding: 3px;
+}
+
