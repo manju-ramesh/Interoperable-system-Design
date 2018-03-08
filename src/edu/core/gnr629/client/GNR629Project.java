@@ -20,8 +20,10 @@ package edu.core.gnr629.client;
  */
 
 import com.google.gwt.core.client.EntryPoint;
+
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.xml.client.XMLParser;
 import org.gwtopenmaps.openlayers.client.control.OverviewMap;
 import org.gwtopenmaps.openlayers.client.LonLat;
 import org.gwtopenmaps.openlayers.client.Map;
@@ -31,6 +33,8 @@ import org.gwtopenmaps.openlayers.client.control.LayerSwitcher;
 import org.gwtopenmaps.openlayers.client.control.MouseDefaults;
 import org.gwtopenmaps.openlayers.client.control.PanZoomBar;
 import org.gwtopenmaps.openlayers.client.control.ScaleLine;
+import org.gwtopenmaps.openlayers.client.control.WMSGetFeatureInfo;
+import org.gwtopenmaps.openlayers.client.control.WMSGetFeatureInfoOptions;
 import org.gwtopenmaps.openlayers.client.filter.FeatureIdFilter;
 import org.gwtopenmaps.openlayers.client.layer.Vector;
 import org.gwtopenmaps.openlayers.client.layer.VectorOptions;
@@ -48,8 +52,21 @@ import org.gwtopenmaps.openlayers.client.layer.GoogleV3MapType;
 import org.gwtopenmaps.openlayers.client.layer.GoogleV3Options;
 import org.gwtopenmaps.openlayers.client.layer.WMSOptions;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.http.client.RequestBuilder;
+import com.google.gwt.http.client.RequestCallback;
+import com.google.gwt.http.client.Request;
+import com.google.gwt.http.client.RequestException;
+import com.google.gwt.http.client.Response;
 
-
+import com.google.gwt.xml.client.DOMException;
+import com.google.gwt.xml.client.Document;
+import com.google.gwt.xml.client.Element;
+import com.google.gwt.xml.client.Node;
+import com.google.gwt.xml.client.NodeList;
+import com.google.gwt.xml.client.XMLParser;
+import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.HTML;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -64,15 +81,24 @@ public class GNR629Project implements EntryPoint {
 	private Map map;
 	private WMS wmsLayer,wmsLayer2,wmsLayer3,wmsLayer4;
 	private WMS Getcap;
+	 ListBox wmsLayersList=new ListBox();
+	 ListBox wmsOperationsList= new ListBox();
+	 FlexTable grid;
+	 ListBox wfsOperationsList=new ListBox();
+	 
+	 ListBox wmsCRSList =new ListBox();
+	 ListBox trekList= new ListBox();;
+	 ListBox featuresList=new ListBox();
+	  
+	
 	/**
 	 * This is the entry point method.
 	 */
 	
 	public void onModuleLoad() {
-		
-		
-
-		
+    
+			        
+			        
 		MapOptions mapOptions = new MapOptions();
 		mapOptions.setControls(new JObjectArray(new JSObject[] {}));
 		mapOptions.setNumZoomLevels(25);
@@ -181,13 +207,23 @@ public class GNR629Project implements EntryPoint {
 	        //                 map.getProjection());
 	     // map.setCenter(center, 7);
 		
-	
+    	wmsLayersList.addItem("Select Layer List");
+    	
 		DockPanel dockPanel = new DockPanel();
 		//DockPanel dockPanel2= new DockPanel();
 		//dockPanel2.add(mapWidget, DockPanel.CENTER);
 		//dockPanel2.setBorderWidth(50);
+		
+		dockPanel.add(wmsLayersList, DockPanel.NORTH);
+		dockPanel.add(wmsOperationsList, DockPanel.SOUTH);
+		
 		dockPanel.add(mapWidget, DockPanel.CENTER);
+		dockPanel.add(wmsCRSList, DockPanel.SOUTH);
+		dockPanel.add(trekList, DockPanel.SOUTH);
+		
 		dockPanel.setBorderWidth(5);
+		
+		
 		RootPanel.get().add(dockPanel);
 		//RootPanel.get().add(dockPanel2);	
 		
@@ -215,52 +251,105 @@ public class GNR629Project implements EntryPoint {
      	    map.addControl(new ScaleLine()); //Display the scaleline
         map.setCenter(new LonLat(-100, 40), 4);
         
-    /*  final Style normalStyle = new Style(); //the normal style
-        normalStyle.setStrokeWidth(3);
-        normalStyle.setStrokeColor("#FF0000");
-        normalStyle.setFillColor("#FFFF00");
-        normalStyle.setFillOpacity(0.8);
-        normalStyle.setStrokeOpacity(0.8);
-        final Style selectedStyle = new Style(); //the style when a feature is selected, or temporaly selected
-        selectedStyle.setStrokeWidth(3);
-        selectedStyle.setStrokeColor("#FFFF00");
-        selectedStyle.setFillColor("#FF0000");
-        selectedStyle.setFillOpacity(0.8);
-        selectedStyle.setStrokeOpacity(0.8);
-        final StyleMap styleMap = new StyleMap(normalStyle, selectedStyle,
-                                               selectedStyle);
-        wfsLayer.setStyleMap(styleMap);
-        //Create a ModifyFeature control that enables WFS modification
-        final ModifyFeatureOptions modifyFeatureControlOptions = new ModifyFeatureOptions();
-        modifyFeatureControlOptions.setMode(ModifyFeature.RESHAPE); //options are RESHAPE, RESIZE, ROTATE and DRAG
-        final ModifyFeature modifyFeatureControl = new ModifyFeature(wfsLayer,
-                                                                     modifyFeatureControlOptions);
+        RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, "http://localhost:8080/geoserver/wms?request=getCapabilities");//"http://localhost:8080/geoserver/wms?request=getCapabilities");
+      		//"http://neowms.sci.gsfc.nasa.gov/wms?request=getCapabilities"
+      		try {
+      	      builder.sendRequest(null,new RequestCallback() {
 
-   
-        modifyFeatureControl.activate();
+      	        public void onError(Request request, Throwable exception) {
+      	        	//Window.alert("Error Occured while sending requset");
+      	        }
 
-        /*
-         * Note that for saving back to the WFS you can use
-         * final SaveStrategy saveStrategy = new SaveStrategy();
-         * saveStrategy.setAuto(true);
-         * vectorOptions.setStrategies(new Strategy[] {new BBoxStrategy(), saveStrategy }); // (instead of only BBOXStrategy)
-         */
-
-        //Lets add some default controls to the map
-      
-    //    mapWidget.getElement().getFirstChildElement().getStyle().setZIndex(0);
-       
-        //DockLayoutPanel p =new  DockLayoutPanel(Unit.EM);
-      //  p.addNorth(new HTML("<p>This example shows how you can filter out a WFS layer using a Filter. In this example a FeatureIdFilter is used to only show the feature with FID states.30. You will see only a brown WFS overlay on one state."), 10);
-       // dockPanel.add(new HTML(
-         //               "<p>This example shows how you can filter out a WFS layer using a Filter. In this example a FeatureIdFilter is used to only show the feature with FID states.30. You will see only a brown WFS overlay on one state."),DockPanel.SOUTH);
-  //          initWidget(p);  
-        
-    	
-    //	RootPanel.get().add(p);
+      	        public void onResponseReceived(Request request, Response response) {
+      	            if (200 == response.getStatusCode()) {
+      	                // Process the response in response.getText()
+      					String xmlResponse = response.getText();
+      					try {
+      					    // parse the XML document into a DOM
+      					    Document messageDom = XMLParser.parse(xmlResponse);
+      					    // populate the list with requests name
+      					    Node r = messageDom.getElementsByTagName("Request").item(0);
+      					    NodeList requests = (NodeList)r.getChildNodes();
+      					    for(int i=0;i<requests.getLength() 	;i++){
+      					    	if(requests.item(i).getNodeType() == Node.ELEMENT_NODE){
+      						    	wmsOperationsList.addItem(requests.item(i).getNodeName());	
+      					    	}
+      					    }
+      					    // populate the list with the layers name
+      					    NodeList layers = messageDom.getElementsByTagName("Layer");
+      					    for(int i=1;i<layers.getLength();i++){
+      					    	Node layerNameNode = ((Element)layers.item(i)).getElementsByTagName("Name").item(0);
+      					    	String layerName = layerNameNode.getFirstChild().getNodeValue();
+      					    	    					    	
+      					    	 
+      					    	   if (layerName=="nurc:Pk50095")
+      					    	{
+      					    		
+      					    		 NodeList CSRNode=((Element)layers.item(i)).getChildNodes();
+      					    		 for( int j=0;j<CSRNode.getLength();j++)
+      					    		 {
+      					    			 
+      					    	  		 if(CSRNode.item(j).getNodeName()=="CRS")
+      					    		 {
+      					    			// trekList.addItem(String.valueOf(j));
+          					    		// trekList.addItem(String.valueOf(i));
+          					    		 //trekList.addItem(String.valueOf(CSRNode.getLength()));
+      					    		 
+      					    			 wmsCRSList.addItem(String.valueOf(CSRNode.item(j).getFirstChild().getNodeValue()));
+      					    		 }
+      					    		 }
+      					    	//	 NodeList CRS = CSRNode.item(0).getChildNodes();
+      					    		//String CSRName = CSRNode.getFirstChild().getNodeValue();	
+      					    		//int k = CSRNode.getLength();
+      					    		
+      					    	//	Node N= CSRNode.item(0);
+      					    		
+      					    		//for( int j=1;j<k;j++)
+      					    		//{
+      					    			//Node CSRNameNode = ((Element)CSRNode.item(j)).getElementsByTagName("CSR").item(0);
+      					    		
+          					    	//String CSRName = CSRNameNode.getFirstChild().getNodeValue();	
+      					    	// wmsCRSList.addItem(CSRNode.item(j).getFirstChild().getNodeValue());
+      					    		
+      					    		
+      					    		 
+      					    	//	}
+      					    		//System.out.println(k);
+      					    		
+      					    		//for( ;N != null; N = N.getNextSibling())
+      					    	//	 wmsCRSList.addItem("k");	      					    	
+      					    	     	      					    
+      	      					  //  wmsCRSList.addItem(N.getNodeValue());
+      					    	}   	      					       
+      					    	    
+      					    	   
+      					    	    					    	wmsLayersList.addItem(layerName);
+      					    }
+      					 // NodeList CRS = messageDom.getElementsByTagName("CRS");
+    					  //  for(int i=1;i<CRS.getLength();i++){
+    					  //  	Node CRSNameNode = ((Element)CRS.item(i)).getElementsByTagName("Name").item(0);
+    					  //  	String CRSName = CRSNameNode.getFirstChild().getNodeValue();
+    					  //  	wmsCRSList.addItem(CRSName);
+    					   // }
+      					     					    
+      							   						
+      					  } catch (DOMException e) {
+      						  System.out.println("Could not parse XML document.");
+      					  }				
+      	            } else {
+      	              // Handle the error.  Can get the status text from response.getStatusText()
+      	            	//resp.setText("Error occured"+response.getStatusCode());
+      	            	System.out.println("response is not received");
+      	            }
+      	        }
+      	      });
+      	    } catch (RequestException e) {
+      	      System.out.println("Failed to send the request: " + e.getMessage());
+      	    }	
 	}
+      	 
 	
-	
+
       
         public String getSourceCodeURL() 
         {
