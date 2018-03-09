@@ -71,7 +71,7 @@ public class WmsService {
 	
 
 	
-	private FlexTable grid = new FlexTable();
+		private FlexTable grid = new FlexTable();
 	    final ListBox serverListbox = new ListBox();
 	    final ListBox wmsRequestListbox = new ListBox();
 	    final ListBox wmsLayersListbox = new ListBox();
@@ -119,35 +119,21 @@ public class WmsService {
 			grid.setWidget(8,0,maxX);
 			grid.setWidget(8,1,maxY);
 			grid.setWidget(9, 1,submit);
-			/*
-		    grid.setHTML(12, 0, "XML Response");
-		    FlexCellFormatter cellFormatter = grid.getFlexCellFormatter();
-		    cellFormatter.setHorizontalAlignment(
-		            10, 0, HasHorizontalAlignment.ALIGN_CENTER);
-		    cellFormatter.setColSpan(12, 0, 2);
-		    cellFormatter.setRowSpan(12, 0, 5);
-		    
-		    AbsolutePanel wmsPanel = new AbsolutePanel();
-		    wmsPanel.setSize("500px", "430px");
-		    wmsPanel.add(grid, 20, 20);
-		    */
+
 		    VerticalPanel wmsPanel = new VerticalPanel();
-		    wmsPanel.setSize("500px", "600px");
+		    wmsPanel.setSize("300px", "400px");
 		    wmsPanel.add(grid);
 		    
 		    	
-		    	String xmldoc = "This is a ScrollPanel contained at the center of a DockPanel. By putting some fairly large contents in the middle and setting its size explicitly, it becomes a scrollable area within the page, but without requiring the use of an IFRAME.\r\n" + 
-		    			"\r\n" + 
-		    			"Here's quite a bit more meaningless text that will serve primarily to make this thing scroll off the bottom of its visible area. Otherwise, you might have to make it really, really small in order to see the nifty scroll bars!";
-		    	HTML xmlresponse = new HTML(xmldoc);
-		    	//xmlpanel.add(xmlresponse,20,30);
-			    ScrollPanel scroller = new ScrollPanel(xmlresponse);
-			    scroller.setSize("400px", "300px");
-			//xmlpanel.add(scroller);
-		    wmsPanel.add(scroller);
+		    	AbsolutePanel xmlpanel = new AbsolutePanel();
+			    xmlpanel.add(new HTML("XML RESPONSE PANEL"),200,1);
+
+		    	xmlpanel.setStyleName("gwt-AbsolutePanel");
+		    	xmlpanel.setSize("500px", "400px");
+			    wmsPanel.add(xmlpanel);
 		    
 		    serverListbox.addItem("Select Server");
-		    serverListbox.addItem("http://localhost:8080/geoserver/wms?request=getCapabilities");
+		    serverListbox.addItem("GEOSERVER/WMS");
 		    serverListbox.addItem("External");
 		    serverListbox.addChangeHandler(new ChangeHandler() {
  
@@ -159,7 +145,7 @@ public class WmsService {
 		      	    FormatListbox.clear();
 		        	  
 		        	xmlResponse= onChangeServerWMS(serverListbox);
-		           
+           
 		        }
            
 				public String onChangeServerWMS(ListBox lb) {
@@ -175,7 +161,16 @@ public class WmsService {
 			      	        public void onResponseReceived(Request request, Response response) {
 			      	            if (200 == response.getStatusCode()) {
 			      	                // Process the response in response.getText()
-			      				 xmlResponse = response.getText();
+			      				xmlResponse = response.getText();
+			 		        	xmlpanel.clear();
+					        	//xmlpanel.add(new HTML(xmlResponse),20,30);
+					        	ScrollPanel scroller = new ScrollPanel((new HTML(xmlResponse)));
+							    scroller.setSize("500px", "400px");
+							    xmlpanel.add(new HTML("XML RESPONSE"),200,1);
+							    xmlpanel.add(scroller,10,20);
+							    scroller.addStyleName("gwt-ScrollPanel");
+							    wmsPanel.add(xmlpanel);
+							
 			      					try {
 			      					    // parse the XML document into a DOM
 			      					    Document messageDom = XMLParser.parse(xmlResponse);
