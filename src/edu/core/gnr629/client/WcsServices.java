@@ -165,11 +165,13 @@ public class WcsServices {
 			      					    // parse the XML document into a DOM
 			      					    Document messageDom = XMLParser.parse(xmlResponse);
 			      					    // populate the list with requests name
-			      					    Node r = messageDom.getElementsByTagName("ows:Operation").item(0);
-			      					    NodeList requests = (NodeList)r.getChildNodes();
+			      					  
+			      					   NodeList requests = messageDom.getElementsByTagName("ows:Operation");
+
 			      					    for(int i=0;i<requests.getLength() 	;i++){
 			      					    	if(requests.item(i).getNodeType() == Node.ELEMENT_NODE){
-			      					    		wcsRequestListbox.addItem(requests.item(i).getNodeName());	
+			      					    	 	wcsRequestListbox.addItem(((Element)requests.item(i)).getAttribute("name"));
+			      					    		//wcsRequestListbox.addItem(((Element)requests.item(i)).getAttribute("name"));	
 			      					    	}
 			      					    }
 			      					    // populate the list with the layers name

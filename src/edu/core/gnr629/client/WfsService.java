@@ -133,22 +133,25 @@ public class WfsService {
 			      					    // parse the XML document into a DOM
 			      					    Document messageDom = XMLParser.parse(xmlResponse);
 			      					    // populate the list with requests name
-			      					    Node r = messageDom.getElementsByTagName("Request").item(0);
-			      					    NodeList requests = (NodeList)r.getChildNodes();
+			      					  NodeList requests = messageDom.getElementsByTagName("ows:Operation");
+
 			      					    for(int i=0;i<requests.getLength() 	;i++){
 			      					    	if(requests.item(i).getNodeType() == Node.ELEMENT_NODE){
-			      					    		wfsRequestListbox.addItem(requests.item(i).getNodeName());	
+			      					    	 	wfsRequestListbox.addItem(((Element)requests.item(i)).getAttribute("name"));
+			      					    		//wcsRequestListbox.addItem(((Element)requests.item(i)).getAttribute("name"));	
 			      					    	}
 			      					    }
 			      					    // populate the list with the layers name
-			      					    NodeList layers = messageDom.getElementsByTagName("Layer");
-			      					    for(int i=1;i<layers.getLength();i++){
-			      					    	Node layerNameNode = ((Element)layers.item(i)).getElementsByTagName("Name").item(0);
-			      					    	String layerName = layerNameNode.getFirstChild().getNodeValue();
+			      					  NodeList features = messageDom.getElementsByTagName("FeatureType");
+			      					    //wfsLayersListbox.clear();
+			  					        for(int i=0;i<features.getLength();i++){
+			  					    	Node featureNode = ((Element)features.item(i)).getElementsByTagName("Name").item(0);
+			  					    	String featureName = featureNode.getFirstChild().getNodeValue();
+			  					    	wfsLayersListbox.addItem(featureName);
 			      					    	    					    	
 			      					    	      					    	 
 			      					    	   
-			      					    	 wfsLayersListbox.addItem(layerName);
+			      					    	 
 			      					    }
 			      						      					     					    
 			      							   						
