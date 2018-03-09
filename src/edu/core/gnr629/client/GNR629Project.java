@@ -94,10 +94,8 @@ public class GNR629Project implements EntryPoint {
 	   private static final Projection DEFAULT_PROJECTION = new Projection(
        "EPSG:4326");
 	
-	private MapWidget mapWidget;
-	private Map map;
-	private WMS wmsLayer,wmsLayer2,wmsLayer3,wmsLayer4;
-	private WMS Getcap;
+	 MapWidget mapWidget;
+	 Map map;
 	 ListBox wmsLayersList=new ListBox();
 	 ListBox wmsOperationsList= new ListBox();
 	 FlexTable grid;
@@ -113,7 +111,6 @@ public class GNR629Project implements EntryPoint {
 	 */
 	
 	public void onModuleLoad() {
-		
 		
 		mapOptions.setControls(new JObjectArray(new JSObject[] {}));
 		mapOptions.setNumZoomLevels(15);
@@ -160,7 +157,7 @@ public class GNR629Project implements EntryPoint {
 	    TabPanel tabs = new TabPanel();
 	    
 	    
-	    tabs.add(wmsOb.wmstab(map), "WMS");
+	    tabs.add(wmsOb.wmstab(map,mapWidget), "WMS");
 	    tabs.add(wfsOb.wfstab(map), "WFS");
 	    tabs.add(wcsOb.wcstab(map), "WCS");
 	    tabs.setWidth("100%");
