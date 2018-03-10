@@ -160,7 +160,7 @@ public class GNR629Project implements EntryPoint {
 	    TabPanel tabs = new TabPanel();
 	    
 	    
-	    tabs.add(wmsOb.wmstab(map), "WMS");
+	    tabs.add(wmsOb.wmstab(map,mapWidget), "WMS");
 	    tabs.add(wfsOb.wfstab(map), "WFS");
 	    tabs.add(wcsOb.wcstab(map), "WCS");
 	    tabs.setWidth("100%");

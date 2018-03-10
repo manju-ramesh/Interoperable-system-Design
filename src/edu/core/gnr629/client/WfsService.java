@@ -1,9 +1,18 @@
 package edu.core.gnr629.client;
 
+import org.gwtopenmaps.openlayers.client.Bounds;
 import org.gwtopenmaps.openlayers.client.Map;
+import org.gwtopenmaps.openlayers.client.layer.Vector;
+import org.gwtopenmaps.openlayers.client.layer.VectorOptions;
+import org.gwtopenmaps.openlayers.client.protocol.WFSProtocol;
+import org.gwtopenmaps.openlayers.client.protocol.WFSProtocolOptions;
+import org.gwtopenmaps.openlayers.client.strategy.BBoxStrategy;
+import org.gwtopenmaps.openlayers.client.strategy.Strategy;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
@@ -30,8 +39,8 @@ public class WfsService {
 	
 		final FlexTable grid = new FlexTable();
 	    final ListBox serverListbox = new ListBox();
-	    final ListBox wfsRequestListbox = new ListBox();
-	    final ListBox wfsLayersListbox = new ListBox();
+	    final ListBox wfsOperationsList = new ListBox();
+	    final ListBox featuresList = new ListBox();
 	    final ListBox CRSListbox = new ListBox();
 	    final ListBox fieldListBox = new ListBox();
 		final TextBox fieldValue = new TextBox();
@@ -51,7 +60,7 @@ public class WfsService {
 			maxY.setText(String.valueOf(bwfs.getUpperRightY()));
 			*/
 			
-			
+			final String namespace = null;
 			final Button submit = new Button();
 			submit.setSize("100px", "40px");
 			submit.setText("Submit");
@@ -61,9 +70,9 @@ public class WfsService {
 			grid.setHTML(0,0,"Server:");
 			grid.setWidget(0, 1, serverListbox);
 			grid.setHTML(1,0,"Request");
-			grid.setWidget(1, 1, wfsRequestListbox);
-			grid.setHTML(2,0,"Layers");
-			grid.setWidget(2, 1, wfsLayersListbox);
+			grid.setWidget(1, 1, wfsOperationsList);
+			grid.setHTML(2,0,"Feature Type");
+			grid.setWidget(2, 1, featuresList);
 			grid.setHTML(3,0,"Field");
 			grid.setWidget(3, 1, fieldListBox);
 			grid.setHTML(4,0,"Value");
@@ -78,12 +87,12 @@ public class WfsService {
 			grid.setWidget(8,1,maxY);
 			grid.setWidget(9, 1,submit);
 
-		    VerticalPanel wfsPanel = new VerticalPanel();
+		    final VerticalPanel wfsPanel = new VerticalPanel();
 		    wfsPanel.setSize("300px", "400px");
 		    wfsPanel.add(grid);
 		    
 		    	
-		    AbsolutePanel xmlpanel = new AbsolutePanel();
+		    final AbsolutePanel xmlpanel = new AbsolutePanel();
 		    xmlpanel.add(new HTML("XML RESPONSE PANEL"),200,1);
 
 	    	xmlpanel.setStyleName("gwt-AbsolutePanel");
@@ -91,14 +100,14 @@ public class WfsService {
 		    wfsPanel.add(xmlpanel);
 		    
 		    serverListbox.addItem("Select Server");
-		    serverListbox.addItem("GEOSERVER/WFS");
+		    serverListbox.addItem("http://localhost:8080/geoserver/wms");
 		    serverListbox.addItem("External");
 		    serverListbox.addChangeHandler(new ChangeHandler() {
  
 		        @Override
 		        public void onChange(ChangeEvent event) {
-		        	  wfsRequestListbox.clear();
-		        	  wfsLayersListbox.clear();
+		        	  wfsOperationsList.clear();
+		        	  featuresList.clear();
 		      	      fieldListBox.clear();
 		      	      // FormatListbox.clear();
 		        	  
@@ -137,7 +146,7 @@ public class WfsService {
 
 			      					    for(int i=0;i<requests.getLength() 	;i++){
 			      					    	if(requests.item(i).getNodeType() == Node.ELEMENT_NODE){
-			      					    	 	wfsRequestListbox.addItem(((Element)requests.item(i)).getAttribute("name"));
+			      					    	 	wfsOperationsList.addItem(((Element)requests.item(i)).getAttribute("name"));
 			      					    		//wcsRequestListbox.addItem(((Element)requests.item(i)).getAttribute("name"));	
 			      					    	}
 			      					    }
@@ -147,11 +156,10 @@ public class WfsService {
 			  					        for(int i=0;i<features.getLength();i++){
 			  					    	Node featureNode = ((Element)features.item(i)).getElementsByTagName("Name").item(0);
 			  					    	String featureName = featureNode.getFirstChild().getNodeValue();
-			  					    	wfsLayersListbox.addItem(featureName);
+			  					    	featuresList.addItem(featureName);
+			  					    	
+			  					    	
 			      					    	    					    	
-			      					    	      					    	 
-			      					    	   
-			      					    	 
 			      					    }
 			      						      					     					    
 			      							   						
@@ -171,40 +179,27 @@ public class WfsService {
 			      		return xmlResponse;
 				}
 				
-				//lb.getValue(lb.getSelectedIndex()) 
-			      	 
-				
-
-					
-					// When server changes
-					
-					// lb.getValue(lb.getSelectedIndex()) contains the value of the server 
-					// Create url for the get capabilities of this server
-					
-					//lb.getValue(lb.getSelectedIndex())+"?request=getCapabilities");//"http://localhost:8080/geoserver/wfs?request=getCapabilities"
-		  //		//"http://localhost:8080/geoserver/wfs?request=getCapabilities");
-										
-					// send the get capab request
-					
-					//
 					
 		    });
 		    
-		    wfsLayersListbox.addChangeHandler(new ChangeHandler(){
+		    featuresList.addChangeHandler(new ChangeHandler(){
 		    	
 		   
-		    		  @Override
 				        public void onChange(ChangeEvent event) {
 		    			   CRSListbox.clear();
-				            onChangeServerwfs(wfsLayersListbox,xmlResponse);
+				            onChangeFeaturewfs(featuresList,xmlResponse,namespace);
 				           
 				        }
 		           
-						public void onChangeServerwfs(ListBox lb,String xmlResponse) { 
+						public void onChangeFeaturewfs(ListBox lb,String xmlResponse, String namespace) { 
 												
 							 Document messageDom = XMLParser.parse(xmlResponse);
-							 NodeList layers = messageDom.getElementsByTagName("Layer");
-	      					        					    	    					    	
+							 NodeList layers = messageDom.getElementsByTagName("FeatureType");
+							 String featureName = featuresList.getItemText(featuresList.getSelectedIndex());
+							 String ns = "xmlns:"+featureName.split(":")[0];
+							 namespace = ((Element)layers.item(lb.getSelectedIndex())).getAttribute(ns);
+
+	      					        /*					    	    					    	
      					    		 NodeList CSRNode=((Element)layers.item(lb.getSelectedIndex())).getChildNodes();
      					    		 
      					    		 for( int j=0;j<CSRNode.getLength();j++)
@@ -219,15 +214,48 @@ public class WfsService {
      					    	  			CRSListbox.addItem(String.valueOf(CSRNode.item(j).getFirstChild().getNodeValue()));
      					    		 }
      					    		 }
+     					    		 */
 											
      					    	
 						
 						}
 		    });
 		    
+		    submit.addClickHandler(new ClickHandler(){
+		    	public void onClick(ClickEvent event) {
+					
+					onClickSubmitButton(submit);
+				           
+				        }
+		    	 public void onClickSubmitButton(Button s) {
+						//Bounds bWMS = new Bounds(Double.parseDouble(minX.getValue()),Double.parseDouble(minY.getValue()),Double.parseDouble(maxX.getValue()),Double.parseDouble(maxY.getValue()));
+						//map.zoomToExtent(bWMS);
+						int itemIndex = wfsOperationsList.getSelectedIndex();
+						if(wfsOperationsList.getItemText(itemIndex).contains("GetCapabilities")){
+							
+						}else if(wfsOperationsList.getItemText(itemIndex).contains("DescribeFeatureType")){
+							
+						} else if(wfsOperationsList.getItemText(itemIndex).contains("GetFeature")){						       
+							WFSProtocolOptions wfsProtocolOptions = new WFSProtocolOptions();
+							String wfsUrl = serverListbox.getItemText(serverListbox.getSelectedIndex());
+							wfsProtocolOptions.setUrl(wfsUrl);
+							String featureName = featuresList.getItemText(featuresList.getSelectedIndex());
+							wfsProtocolOptions.setFeatureType(featureName.substring(featureName.indexOf(':')+1));
+							//wfsProtocolOptions.setFeatureNameSpace("http://www.openplans.org/topp");								
+							wfsProtocolOptions.setFeatureNameSpace(namespace);
+							WFSProtocol wfsProtocol = new WFSProtocol(wfsProtocolOptions);
+
+							VectorOptions vectorOptions = new VectorOptions();
+							vectorOptions.setProtocol(wfsProtocol);
+							vectorOptions.setStrategies(new Strategy[] { new BBoxStrategy()});
+							//vectorOptions.setProjection(map.getBaseLayer().getProjection().toString());
+							
+							Vector wfsLayer = new Vector(featureName, vectorOptions);
+							map.addLayer(wfsLayer);
+		    	 }
+		    	 }});
 			    
 		    		
 		return wfsPanel;
 	}
 	}
-
