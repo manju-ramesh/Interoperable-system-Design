@@ -1,15 +1,15 @@
 package edu.core.gnr629.client;
 
-import org.gwtopenmaps.openlayers.client.LonLat;
+import org.gwtopenmaps.openlayers.client.Bounds;
 import org.gwtopenmaps.openlayers.client.Map;
 import org.gwtopenmaps.openlayers.client.MapWidget;
 import org.gwtopenmaps.openlayers.client.control.WMSGetFeatureInfo;
 import org.gwtopenmaps.openlayers.client.control.WMSGetFeatureInfoOptions;
+import org.gwtopenmaps.openlayers.client.event.EventListener;
 import org.gwtopenmaps.openlayers.client.event.GetFeatureInfoListener;
 import org.gwtopenmaps.openlayers.client.layer.WMS;
 import org.gwtopenmaps.openlayers.client.layer.WMSOptions;
 import org.gwtopenmaps.openlayers.client.layer.WMSParams;
-import org.gwtopenmaps.openlayers.client.LonLat;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -22,6 +22,7 @@ import com.google.gwt.http.client.Response;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.FocusPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.ScrollPanel;
@@ -31,7 +32,6 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.DOMException;
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Element;
-import com.google.gwt.xml.client.NamedNodeMap;
 import com.google.gwt.xml.client.Node;
 import com.google.gwt.xml.client.NodeList;
 import com.google.gwt.xml.client.XMLParser;
@@ -39,6 +39,7 @@ public class WmsService {
 	
 
 	
+	protected static final EventListener GetFeatureInfoListener = null;
 	private FlexTable grid = new FlexTable();
 	    final ListBox serverListbox = new ListBox();
 	    final ListBox wmsRequestListbox = new ListBox();
@@ -52,6 +53,8 @@ public class WmsService {
 		final TextBox maxY = new TextBox();
 		NodeList FORMATNode ;
 		final Button submit = new Button();
+		String CRS =new String();
+		 WMSGetFeatureInfo wmsGetFeatureInfo;
 
 		 String Url=new String();
 		 private WMS wmsLayer;
@@ -61,7 +64,7 @@ public class WmsService {
 		
 	public Widget wmstab(final Map map,final MapWidget mapWidget) {
 		// WMS tab initial GUI
-		  
+	//	Url ="http://localhost:8080/geoserver/wms?request=getCapabilities";
 			/*
 			Bounds bWMS = map.getExtent();
 			minX.setText(String.valueOf(bWMS.getLowerLeftX()));
@@ -112,7 +115,7 @@ public class WmsService {
 		    
 		    serverListbox.addItem("Select Server");
 		    serverListbox.addItem("http://localhost:8080/geoserver/wms");
-		    serverListbox.addItem("External");
+		    serverListbox.addItem("http://bhuvan5.nrsc.gov.in:80/bhuvan/wms");
 		    serverListbox.addChangeHandler(new ChangeHandler() {
  
 		        @Override
@@ -127,8 +130,21 @@ public class WmsService {
 		        }
            
 				public String onChangeServerWMS(ListBox lb) {
-					Url=lb.getValue(lb.getSelectedIndex());
-					 RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, "http://localhost:8080/geoserver/wms?request=getCapabilities");//"http://localhost:8080/geoserver/wms?request=getCapabilities");
+					
+					
+					if (lb.getSelectedIndex()==1)
+				{
+						Url ="http://localhost:8080/geoserver/wms?request=getCapabilities";
+					CRS="CRS";}
+					else if (lb.getSelectedIndex()==2)
+					{
+					
+				Url ="http://bhuvan5.nrsc.gov.in:80/bhuvan/wms?request=getCapabilities";
+					CRS="SRS";
+					}
+					
+					
+					 RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, Url);//"http://localhost:8080/geoserver/wms?request=getCapabilities");
 			      		//"http://neowms.sci.gsfc.nasa.gov/wms?request=getCapabilities"
 			      		try {
 			      	      builder.sendRequest(null,new RequestCallback() {
@@ -206,6 +222,8 @@ public class WmsService {
 					
 		    });
 		    
+		   
+		    
 		   wmsRequestListbox.addChangeHandler(new ChangeHandler(){
 		    	
 		   
@@ -282,7 +300,7 @@ public class WmsService {
 						}
 						
 		    });
-		    
+		   
 		   wmsLayersListbox.addChangeHandler(new ChangeHandler(){
 		    	
 				   
@@ -303,14 +321,25 @@ public class WmsService {
 					    		 for( int j=0;j<CSRNode.getLength();j++)
 					    		 {
 					    			 
-					    	  		 if(CSRNode.item(j).getNodeName()=="CRS")
+					    	  		 if(CSRNode.item(j).getNodeName()==CRS)
 					    	    				    		 
 					    	  			CRSListbox.addItem(String.valueOf(CSRNode.item(j).getFirstChild().getNodeValue()));
+					    	  		 
+					    	  		 
+					    	  	//	String.valueOf(((Element) CSRNode.item(j)).getAttribute("CRS")
+					    	  		if(CSRNode.item(j).getNodeName().matches("BoundingBox *"))
+					    	  				{
+					    	  			minX.setText(String.valueOf(((Element) CSRNode.item(j)).getAttribute("minx")));
+					    	  			minY.setText(String.valueOf(((Element) CSRNode.item(j)).getAttribute("miny")));
+					    	  			maxX.setText(String.valueOf(((Element) CSRNode.item(j)).getAttribute("maxx")));
+					    	  			maxY.setText(String.valueOf(((Element) CSRNode.item(j)).getAttribute("maxy")));
+					    	  			
+					    	  				}
 					    		 
-					    	  		 if( CSRNode.item(j).getNodeName().matches("EX_GeographicBoundingBox"))
+					    	  /*		 if( CSRNode.item(j).getNodeName().matches("EX_GeographicBoundingBox"))
 					    	  		 {
 					    	  			 NodeList X=CSRNode.item(j).getChildNodes();
-					    	  			  trekList.addItem(String.valueOf(X.getLength()));
+					    	  			 
 					    	  		 for(int s=0;s<X.getLength();s++)	
 					    	  			 {
 					    	  				 if(X.item(s).getNodeName().matches("westBoundLongitude"))
@@ -323,7 +352,7 @@ public class WmsService {
 					    	  					maxY.setText(String.valueOf(X.item(s).getFirstChild().getNodeValue()));
 					    	  				
 								    	  			 }
-					    	  		 }
+					    	  		 }*/
 					    	  	//	if(CSRNode.item(j).getNodeName()=="FORMAT")
 					    	  		//	FormatListbox.addItem(String.valueOf(CSRNode.item(j).getFirstChild().getNodeValue()));
 					    		 }
@@ -335,7 +364,11 @@ public class WmsService {
 					    });    
 		    	
 		   
-		    
+	//	    wmsPanel.addAttachHandler(wmsGetFeatureInfo.activate());
+	 
+	
+				   
+					   
 		    submit.addClickHandler(new ClickHandler(){
 		    	public void onClick(ClickEvent event) {
 					
@@ -368,8 +401,19 @@ public class WmsService {
 						wmsLayerParams.setProjection(map.getBaseLayer().getProjection().toString());
 						String wmsUrl = serverListbox.getItemText(serverListbox.getSelectedIndex());
 						WMS wmsLayer = new WMS(layerName, wmsUrl, wmsParams,wmsLayerParams);
-
+						//wmsGetFeatureInfo.deactivate();
 						map.addLayer(wmsLayer);	
+					
+						minX.getText();
+						float minx = Float.parseFloat(minX.getText()); 
+						float miny = Float.parseFloat(minY.getText());
+						float maxx = Float.parseFloat(maxX.getText());
+						float maxy = Float.parseFloat(maxY.getText());
+							Bounds extent = new Bounds(minx,miny,maxx,maxy);
+						 
+						//map.set
+					//	setProjection(CRSListbox.getValue(CRSListbox.getSelectedIndex()))	;
+						map.setMaxExtent(extent);	
 						
 						//Need to center map here
 						
@@ -389,12 +433,7 @@ public class WmsService {
 						wmsParams.setTransparent(true);
 						wmsParams.setStyles("");
 						
-						//float minx = Float.parseFloat(minX.getText()); 
-						//float miny = Float.parseFloat(minY.getText());
-						//float maxx = Float.parseFloat(maxX.getText());
-						//float maxy = Float.parseFloat(maxY.getText());
-						//Bounds bBox = new Bounds(minx,miny,maxx,maxy);
-						
+				
 						WMSOptions wmsLayerParams = new WMSOptions();
 						wmsLayerParams.setUntiled();
 						//wmsLayerParams.setTransitionEffect(TransitionEffect.RESIZE);
@@ -437,8 +476,90 @@ public class WmsService {
 					 }
 		    }
 					        });
+		    
+		    FocusPanel wrapper = new FocusPanel();
+		      wrapper.add(wmsPanel);
+		    wrapper.addClickHandler(new ClickHandler() {
+		      @Override
+		      public void onClick(ClickEvent event) {
+		        // Handle the click
+		    	  wmsGetFeatureInfo.removeListener(GetFeatureInfoListener);  
+		    	  
+		      }
+		    });
 					    
-	
+		    CRSListbox.addChangeHandler(new ChangeHandler(){
+		    	
+				   
+	    		  @Override
+			        public void onChange(ChangeEvent event) {
+	    			  // CRSListbox.clear();
+			            onChangeCRSWMS(CRSListbox, wmsLayersListbox,xmlResponse);
+			           
+			        }
+	           
+					public void onChangeCRSWMS(ListBox lb,ListBox lb1,String xmlResponse) { 
+											
+						 Document messageDom = XMLParser.parse(xmlResponse);
+						 NodeList layers = messageDom.getElementsByTagName("Layer");
+  					        					    	    					    	
+					    		 NodeList CSRNode=((Element)layers.item(lb1.getSelectedIndex())).getChildNodes();
+					    		 
+					    		 		// wmsParams.setLayers(lb.getValue(lb1.getSelectedIndex()));
+					    		 for( int j=0;j<CSRNode.getLength();j++)
+					    		 {					    			 				    			  		 
+					    	  		 
+					    	  	//	String.valueOf(((Element) CSRNode.item(j)).getAttribute("CRS")
+					    	  		if(CSRNode.item(j).getNodeName().matches("BoundingBox *"))
+					    	  		{
+					    	  			//trekList.addItem("OK");
+					    	  		//	trekList.addItem(String.valueOf(lb.getSelectedIndex()));
+					    	  		//	trekList.addItem(String.valueOf(lb.getValue(lb.getSelectedIndex())));
+					    	  		//	trekList.addItem(String.valueOf(((Element) CSRNode.item(j)).getAttribute("CRS")));
+					    	  			
+					    	  			if( lb.getValue(lb.getSelectedIndex())==String.valueOf(((Element) CSRNode.item(j)).getAttribute("CRS"))) 
+					    	  			{
+					    	  			minX.setText(String.valueOf(((Element) CSRNode.item(j)).getAttribute("minx")));
+					    	  			
+					    	  			minY.setText(String.valueOf(((Element) CSRNode.item(j)).getAttribute("miny")));
+					    	  		
+					    	  		    maxX.setText(String.valueOf(((Element) CSRNode.item(j)).getAttribute("maxx")));
+					    	  		 
+					    	  		    maxY.setText(String.valueOf(((Element) CSRNode.item(j)).getAttribute("maxy")));
+					    	  
+					    	  				}
+					    	  		}
+					
+					    		 
+					    	  /*		 if( CSRNode.item(j).getNodeName().matches("EX_GeographicBoundingBox"))
+					    	  		 {
+					    	  			 NodeList X=CSRNode.item(j).getChildNodes();
+					    	  			 
+					    	  		 for(int s=0;s<X.getLength();s++)	
+					    	  			 {
+					    	  				 if(X.item(s).getNodeName().matches("westBoundLongitude"))
+					    	  					minX.setText(String.valueOf(X.item(s).getFirstChild().getNodeValue()));
+					    	  				 if(X.item(s).getNodeName().matches("eastBoundLongitude"))
+					    	  					minY.setText(String.valueOf(X.item(s).getFirstChild().getNodeValue()));
+					    	  				if(X.item(s).getNodeName().matches("southBoundLatitude"))
+					    	  					maxX.setText(String.valueOf(X.item(s).getFirstChild().getNodeValue()));
+					    	  				if(X.item(s).getNodeName().matches("northBoundLatitude"))
+					    	  					maxY.setText(String.valueOf(X.item(s).getFirstChild().getNodeValue()));
+					    	  				
+								    	  			 }
+					    	  		 }*/
+					    	  	//	if(CSRNode.item(j).getNodeName()=="FORMAT")
+					    	  		//	FormatListbox.addItem(String.valueOf(CSRNode.item(j).getFirstChild().getNodeValue()));
+					    		 }
+										
+					    	
+					
+					}
+
+					    });   
+		    
+		    
+		    	
 
 			// more WMS layers
 	// lets create WMS base map layer
