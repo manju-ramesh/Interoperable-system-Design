@@ -2,6 +2,7 @@ package edu.core.gnr629.client;
 
 import org.gwtopenmaps.openlayers.client.Bounds;
 import org.gwtopenmaps.openlayers.client.Map;
+import org.gwtopenmaps.openlayers.client.filter.FeatureIdFilter;
 import org.gwtopenmaps.openlayers.client.layer.Vector;
 import org.gwtopenmaps.openlayers.client.layer.VectorOptions;
 import org.gwtopenmaps.openlayers.client.protocol.WFSProtocol;
@@ -20,6 +21,7 @@ import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.ListBox;
@@ -41,7 +43,7 @@ public class WfsService {
 	    final ListBox serverListbox = new ListBox();
 	    final ListBox wfsOperationsList = new ListBox();
 	    final ListBox featuresList = new ListBox();
-	    final ListBox CRSListbox = new ListBox();
+	    final CheckBox filterCheck = new CheckBox("Apply Filter");
 	    final ListBox fieldListBox = new ListBox();
 		final TextBox fieldValue = new TextBox();
 		final TextBox minX = new TextBox();
@@ -73,10 +75,11 @@ public class WfsService {
 			grid.setWidget(1, 1, wfsOperationsList);
 			grid.setHTML(2,0,"Feature Type");
 			grid.setWidget(2, 1, featuresList);
-			grid.setHTML(3,0,"Field");
-			grid.setWidget(3, 1, fieldListBox);
-			grid.setHTML(4,0,"Value");
+			grid.setWidget(3,0, filterCheck);
+			//grid.setWidget(3, 1, fieldListBox);
+			grid.setHTML(4,0,"Fid");
 			grid.setWidget(4, 1, fieldValue);
+			/*
 			grid.setHTML(5,0,"MinX");
 			grid.setHTML(5,1,"MinY");
 			grid.setWidget(6,0,minX);
@@ -85,7 +88,8 @@ public class WfsService {
 			grid.setHTML(7,1,"MaxY");
 			grid.setWidget(8,0,maxX);
 			grid.setWidget(8,1,maxY);
-			grid.setWidget(9, 1,submit);
+			*/
+			grid.setWidget(5, 1,submit);
 
 		    final VerticalPanel wfsPanel = new VerticalPanel();
 		    wfsPanel.setSize("300px", "400px");
@@ -100,8 +104,10 @@ public class WfsService {
 		    wfsPanel.add(xmlpanel);
 		    
 		    serverListbox.addItem("Select Server");
-		    serverListbox.addItem("http://localhost:8080/geoserver/wms");
-		    serverListbox.addItem("External");
+		    serverListbox.addItem("http://localhost:8080/geoserver/wfs");
+		    serverListbox.addItem("https://gs.geoscience.nsw.gov.au/geoserver/ows?service=wfs&version=2.0.0");
+		    
+		    
 		    serverListbox.addChangeHandler(new ChangeHandler() {
  
 		        @Override
@@ -116,7 +122,9 @@ public class WfsService {
 		        }
            
 				public String onChangeServerwfs(ListBox lb) {
-					 RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, "http://localhost:8080/geoserver/wfs?request=getCapabilities");//"http://localhost:8080/geoserver/wfs?request=getCapabilities");
+					 String url = serverListbox.getItemText(serverListbox.getSelectedIndex());
+					 
+					 RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, url+"&request=getCapabilities");//"http://localhost:8080/geoserver/wfs?request=getCapabilities");
 			      		//"http://neowfs.sci.gsfc.nasa.gov/wfs?request=getCapabilities"
 			      		try {
 			      	      builder.sendRequest(null,new RequestCallback() {
@@ -186,7 +194,7 @@ public class WfsService {
 		    	
 		   
 				        public void onChange(ChangeEvent event) {
-		    			   CRSListbox.clear();
+		    			   //CRSListbox.clear();
 				            onChangeFeaturewfs(featuresList,xmlResponse,namespace);
 				           
 				        }
@@ -240,7 +248,8 @@ public class WfsService {
 							String wfsUrl = serverListbox.getItemText(serverListbox.getSelectedIndex());
 							wfsProtocolOptions.setUrl(wfsUrl);
 							String featureName = featuresList.getItemText(featuresList.getSelectedIndex());
-							wfsProtocolOptions.setFeatureType(featureName.substring(featureName.indexOf(':')+1));
+							String feature = featureName.substring(featureName.indexOf(':')+1);
+							wfsProtocolOptions.setFeatureType(feature);
 							//wfsProtocolOptions.setFeatureNameSpace("http://www.openplans.org/topp");								
 							wfsProtocolOptions.setFeatureNameSpace(namespace);
 							WFSProtocol wfsProtocol = new WFSProtocol(wfsProtocolOptions);
@@ -250,8 +259,18 @@ public class WfsService {
 							vectorOptions.setStrategies(new Strategy[] { new BBoxStrategy()});
 							//vectorOptions.setProjection(map.getBaseLayer().getProjection().toString());
 							
+							
 							Vector wfsLayer = new Vector(featureName, vectorOptions);
+							if ((filterCheck.getValue()) && fieldValue.getValue()!=null) {
+								String[] fid = new String[] {feature+"." +fieldValue.getValue()};
+							wfsLayer.setFilter(new FeatureIdFilter(fid)); 
+						    
+							}
+							
+								
 							map.addLayer(wfsLayer);
+							
+								
 		    	 }
 		    	 }});
 			    

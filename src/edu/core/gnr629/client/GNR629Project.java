@@ -150,7 +150,7 @@ public class GNR629Project implements EntryPoint {
 		
 						
 		DockPanel dockPanel = new DockPanel();
-	   dockPanel.setStyleName("cw-DockPanel");
+	    dockPanel.setStyleName("cw-DockPanel");
 	    dockPanel.setSpacing(4);
 	    dockPanel.setHorizontalAlignment(DockPanel.ALIGN_CENTER);
 	    dockPanel.add(new HTML("Interoperatable Web Service Client"), DockPanel.NORTH);
