@@ -122,9 +122,17 @@ public class WfsService {
 		        }
            
 				public String onChangeServerwfs(ListBox lb) {
+					char a;
+					if (serverListbox.getSelectedIndex() == 1)
+							a='?';
+					else
+							a='&';
+					
+						
+							
 					 String url = serverListbox.getItemText(serverListbox.getSelectedIndex());
 					 
-					 RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, url+"?request=getCapabilities");//"http://localhost:8080/geoserver/wfs?request=getCapabilities");
+					 RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, url+a+"request=getCapabilities");//"http://localhost:8080/geoserver/wfs?request=getCapabilities");
 			      		//"http://neowfs.sci.gsfc.nasa.gov/wfs?request=getCapabilities"
 			      		try {
 			      	      builder.sendRequest(null,new RequestCallback() {
