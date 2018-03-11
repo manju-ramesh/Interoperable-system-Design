@@ -4,6 +4,6 @@
 	<classpathentry kind="src" output="test-classes" path="test"/>
 	<classpathentry kind="con" path="com.gwtplugins.gwt.eclipse.core.GWT_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="C:/Users/Gariman/Desktop/Mtech CSRE/Mtech 2nd sem/interop/Project/gwt-openlayers-client-1.1.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Aju/Downloads/jar_files/gwt-openlayers-client-1.1.0.jar"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>

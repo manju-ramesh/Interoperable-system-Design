@@ -103,10 +103,10 @@ public class GNR629Project implements EntryPoint {
 	        map.addControl(new MouseDefaults());
 			map.addControl(new PanZoomBar());
 			
-			LonLat lonLat1 = new LonLat(72.8777, 19.0760);
+			LonLat lonLat1 = new LonLat(78.6569, 22.9734);
 	        lonLat1.transform(DEFAULT_PROJECTION.getProjectionCode(),
 	                       map.getProjection());
-	        map.setCenter(lonLat1, 12);
+	        map.setCenter(lonLat1, 4);
 		
 						
 		DockPanel dockPanel = new DockPanel();

@@ -236,7 +236,7 @@ public class WmsService {
 		           
 						public void onChangeRequestWMS(ListBox lb,String xmlResponse) { 
 												
-							
+						
 							//   Document messageDom = XMLParser.parse(xmlResponse);
 	      					    // populate the list with requests name
 	      					  // Node r = messageDom.getElementsByTagName("Request").item(0);
@@ -400,7 +400,7 @@ public class WmsService {
 						wmsLayerParams.setProjection(map.getBaseLayer().getProjection().toString());
 						String wmsUrl = serverListbox.getItemText(serverListbox.getSelectedIndex());
 						WMS wmsLayer = new WMS(layerName, wmsUrl, wmsParams,wmsLayerParams);
-						//wmsGetFeatureInfo.deactivate();
+						
 						map.addLayer(wmsLayer);	
 					
 						minX.getText();
@@ -424,7 +424,7 @@ public class WmsService {
 
 						//wmsGetFeatureInfoOptions.setLayers(new WMS[]{wmsLayer});
 					} else if(wmsRequestListbox.getItemText(itemIndex).contains("GetFeatureInfo")){						       
-				        
+						
 						WMSParams wmsParams = new WMSParams();
 						wmsParams.setFormat("image/png");
 						String layerName = wmsLayersListbox.getItemText(wmsLayersListbox.getSelectedIndex());
@@ -472,7 +472,7 @@ public class WmsService {
 					        mapWidget.getElement().getFirstChildElement().getStyle().setZIndex(0);
 					        wmsGetFeatureInfoOptions.setDrillDown(false);
 					     //   mapWidget.addAttachHandler()
-
+					      //  wmsGetFeatureInfo.deactivate();
 					 }
 		    }
 					        });
@@ -570,8 +570,6 @@ public class WmsService {
 		    
 		    	
 
-			// more WMS layers
-	// lets create WMS base map layer
 	            
 	        
 	      	       	

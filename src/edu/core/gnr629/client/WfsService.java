@@ -105,7 +105,7 @@ public class WfsService {
 		    
 		    serverListbox.addItem("Select Server");
 		    serverListbox.addItem("http://localhost:8080/geoserver/wfs");
-		    serverListbox.addItem("https://gs.geoscience.nsw.gov.au/geoserver/ows?service=wfs&version=2.0.0");
+		    serverListbox.addItem("https://rsg.pml.ac.uk/geoserver/ows?service=wfs");
 		    
 		    
 		    serverListbox.addChangeHandler(new ChangeHandler() {

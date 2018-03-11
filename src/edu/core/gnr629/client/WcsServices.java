@@ -1,10 +1,12 @@
 package edu.core.gnr629.client;
 import com.google.gwt.core.client.EntryPoint;
 
+
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.xml.client.XMLParser;
 import org.gwtopenmaps.openlayers.client.control.OverviewMap;
+import org.gwtopenmaps.openlayers.client.Bounds;
 import org.gwtopenmaps.openlayers.client.LonLat;
 import org.gwtopenmaps.openlayers.client.Map;
 import org.gwtopenmaps.openlayers.client.MapOptions;
@@ -13,9 +15,16 @@ import org.gwtopenmaps.openlayers.client.control.LayerSwitcher;
 import org.gwtopenmaps.openlayers.client.control.MouseDefaults;
 import org.gwtopenmaps.openlayers.client.control.PanZoomBar;
 import org.gwtopenmaps.openlayers.client.control.ScaleLine;
+import org.gwtopenmaps.openlayers.client.control.WMSGetFeatureInfo;
+import org.gwtopenmaps.openlayers.client.control.WMSGetFeatureInfoOptions;
+import org.gwtopenmaps.openlayers.client.event.GetFeatureInfoListener;
+import org.gwtopenmaps.openlayers.client.event.GetFeatureInfoListener.GetFeatureInfoEvent;
 import org.gwtopenmaps.openlayers.client.filter.FeatureIdFilter;
 import org.gwtopenmaps.openlayers.client.layer.Vector;
 import org.gwtopenmaps.openlayers.client.layer.VectorOptions;
+import org.gwtopenmaps.openlayers.client.layer.WMS;
+import org.gwtopenmaps.openlayers.client.layer.WMSOptions;
+import org.gwtopenmaps.openlayers.client.layer.WMSParams;
 import org.gwtopenmaps.openlayers.client.strategy.BBoxStrategy;
 import org.gwtopenmaps.openlayers.client.strategy.Strategy;
 import org.gwtopenmaps.openlayers.client.util.JObjectArray;
@@ -59,6 +68,8 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 public class WcsServices {
 	
 		private FlexTable grid = new FlexTable();
@@ -72,7 +83,7 @@ public class WcsServices {
 		final TextBox maxX = new TextBox();
 		final TextBox maxY = new TextBox();
 		private String xmlResponse = new String();
-	public Widget wcstab(Map map) {
+	public Widget wcstab(final Map map) {
 		// WCS tab initial GUI
 		  
 			/*
@@ -96,8 +107,8 @@ public class WcsServices {
 			grid.setWidget(1, 1, wcsRequestListbox);
 			grid.setHTML(2,0,"Layers");
 			grid.setWidget(2, 1, wcsLayersListbox);
-			grid.setHTML(3,0,"CRS");
-		    grid.setWidget(3, 1, CRSListbox);
+		//	grid.setHTML(3,0,"CRS");
+		  //  grid.setWidget(3, 1, CRSListbox);
 			//grid.setHTML(4,0,"Format");
 			//grid.setWidget(4, 1, FormatListbox);
 		//	grid.setHTML(5,0,"MinX");
@@ -123,8 +134,8 @@ public class WcsServices {
 			    wcsPanel.add(xmlpanel);
 		    
 		    serverListbox.addItem("Select Server");
-		    serverListbox.addItem("GEOSERVER/WCS");
-		    serverListbox.addItem("External");
+		    serverListbox.addItem("ttp://localhost:8080/geoserver/wcs");
+		   // serverListbox.addItem("External");
 		    serverListbox.addChangeHandler(new ChangeHandler() {
  
 		        @Override
@@ -168,7 +179,7 @@ public class WcsServices {
 			      					  
 			      					   NodeList requests = messageDom.getElementsByTagName("ows:Operation");
 
-			      					    for(int i=0;i<requests.getLength() 	;i++){
+			      					    for(int i=0;i<requests.getLength();i++){
 			      					    	if(requests.item(i).getNodeType() == Node.ELEMENT_NODE){
 			      					    	 	wcsRequestListbox.addItem(((Element)requests.item(i)).getAttribute("name"));
 			      					    		//wcsRequestListbox.addItem(((Element)requests.item(i)).getAttribute("name"));	
@@ -176,11 +187,11 @@ public class WcsServices {
 			      					    }
 			      					    // populate the list with the layers name
 			      					    NodeList layers = messageDom.getElementsByTagName("wcs:CoverageSummary");
-			      					    for(int i=1;i<layers.getLength();i++){
+			      					    for(int i=0;i<layers.getLength();i++){
 			      					    	Node layerNameNode = ((Element)layers.item(i)).getElementsByTagName("wcs:CoverageId").item(0);
 			      					    	String layerName = layerNameNode.getFirstChild().getNodeValue();
-			      					    	    					    	
-			      					    	      					    	 
+			      					    	    		    	
+			      					    	layerName = layerName.replace("__",":");				    	 
 			      					    	   
 			      					    	 wcsLayersListbox.addItem(layerName);
 			      					    }
@@ -202,26 +213,11 @@ public class WcsServices {
 			      		return xmlResponse;
 				}
 				
-				//lb.getValue(lb.getSelectedIndex()) 
-			      	 
-				
-
-					
-					// When server changes
-					
-					// lb.getValue(lb.getSelectedIndex()) contains the value of the server 
-					// Create url for the get capabilities of this server
-					
-					//lb.getValue(lb.getSelectedIndex())+"?request=getCapabilities");//"http://localhost:8080/geoserver/wcs?request=getCapabilities"
-		  //		//"http://localhost:8080/geoserver/wcs?request=getCapabilities");
-										
-					// send the get capab request
-					
-					//
+		
 					
 		    });
 		    
-		    wcsLayersListbox.addChangeHandler(new ChangeHandler(){
+	/*	    wcsLayersListbox.addChangeHandler(new ChangeHandler(){
 		    	
 		   
 		    		  @Override
@@ -254,9 +250,57 @@ public class WcsServices {
      					    	
 						
 						}
-		    });
+		    });*/
 		    
-			    
+		    submit.addClickHandler(new ClickHandler(){
+		    	
+		    	
+				@Override
+				public void onClick(ClickEvent event) {
+					
+				//	Bounds bWMS = new Bounds(Double.parseDouble(minX.getValue()),Double.parseDouble(minY.getValue()),Double.parseDouble(maxX.getValue()),Double.parseDouble(maxY.getValue()));
+					//map.zoomToExtent(bWMS);
+					
+					int itemIndex = serverListbox.getSelectedIndex();
+													
+						WMSParams wmsParams = new WMSParams();
+						String layerName = wcsLayersListbox.getItemText(wcsLayersListbox.getSelectedIndex());
+			  	wmsParams.setLayers(layerName);
+						
+						//wmsParams.setTransparent(true);
+						//wmsParams.setStyles("");
+						
+					//	WMSOptions wmsLayerParams = new WMSOptions();
+						//wmsLayerParams.setUntiled();
+						//wmsLayerParams.setTransitionEffect(TransitionEffect.RESIZE);
+						//wmsLayerParams.setDisplayOutsideMaxExtent(true);
+					 //wmsLayerParams.setIsBaseLayer(false);
+				//	wmsLayerParams.setLayerOpacity(1.0);
+				//	wmsLayerParams.setMaxExtent(bBox);
+
+				    WMSOptions wmsLayerParams = new WMSOptions();
+				 	wmsLayerParams.setDisplayOutsideMaxExtent(true);
+				    wmsLayerParams.setTransitionEffectResize();
+				//	wmsLayerParams.setProjection("EPSG:32633");
+					//	wmsLayerParams.setProjection(map.getBaseLayer().getProjection().toString());
+				    wmsParams.setIsTransparent(true);
+			        wmsParams.setFormat("image/png");
+			//        wmsParams4.setLayers("nurc:Arc_Sample");
+			        wmsParams.setStyles("");
+						String wcsUrl = serverListbox.getItemText(serverListbox.getSelectedIndex());
+					//WMS wmsLayer = new WMS(layerName, wcsUrl, wmsParams,wmsLayerParams);
+											
+					     
+					       
+						WMS wmsLayer = new WMS (layerName,"http://localhost:8080/geoserver/wms",wmsParams,wmsLayerParams);
+						map.addLayer(wmsLayer);
+					
+				}
+		    });
+
+
+
+					  
 		    		
 		return wcsPanel;
 	}
