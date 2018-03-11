@@ -57,8 +57,7 @@ public class WmsService {
 		 WMSGetFeatureInfo wmsGetFeatureInfo;
 
 		 String Url=new String();
-		 private WMS wmsLayer;
-		   WMSParams wmsParams = new WMSParams();
+	   WMSParams wmsParams = new WMSParams();
 		private String xmlResponse = new String();
 		
 		
@@ -472,21 +471,31 @@ public class WmsService {
 					        wmsGetFeatureInfo.activate();
 					        mapWidget.getElement().getFirstChildElement().getStyle().setZIndex(0);
 					        wmsGetFeatureInfoOptions.setDrillDown(false);
+					     //   mapWidget.addAttachHandler()
 
 					 }
 		    }
 					        });
 		    
-		    FocusPanel wrapper = new FocusPanel();
+	/*	    FocusPanel wrapper = new FocusPanel();
 		      wrapper.add(wmsPanel);
+		      trekList.addItem("Coming");
 		    wrapper.addClickHandler(new ClickHandler() {
 		      @Override
 		      public void onClick(ClickEvent event) {
 		        // Handle the click
-		    	  wmsGetFeatureInfo.removeListener(GetFeatureInfoListener);  
-		    	  
-		      }
-		    });
+		    	
+		    	  crsChanged(GetFeatureInfoListener);
+		    	 
+		      
+
+			private void crsChanged(EventListener getfeatureinfolistener) {
+				// TODO Auto-generated method stub
+				  wmsGetFeatureInfo.removeListener(getfeatureinfolistener);  
+				 trekList.addItem("Coming");
+			}
+		     
+		    });*/
 					    
 		    CRSListbox.addChangeHandler(new ChangeHandler(){
 		    	

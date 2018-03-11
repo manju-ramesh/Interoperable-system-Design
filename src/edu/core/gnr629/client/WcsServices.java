@@ -97,17 +97,17 @@ public class WcsServices {
 			grid.setHTML(2,0,"Layers");
 			grid.setWidget(2, 1, wcsLayersListbox);
 			grid.setHTML(3,0,"CRS");
-			grid.setWidget(3, 1, CRSListbox);
-			grid.setHTML(4,0,"Format");
-			grid.setWidget(4, 1, FormatListbox);
-			grid.setHTML(5,0,"MinX");
-			grid.setHTML(5,1,"MinY");
-			grid.setWidget(6,0,minX);
-			grid.setWidget(6,1,minY);
-			grid.setHTML(7,0,"MaxX");
-			grid.setHTML(7,1,"MaxY");
-			grid.setWidget(8,0,maxX);
-			grid.setWidget(8,1,maxY);
+		    grid.setWidget(3, 1, CRSListbox);
+			//grid.setHTML(4,0,"Format");
+			//grid.setWidget(4, 1, FormatListbox);
+		//	grid.setHTML(5,0,"MinX");
+			//grid.setHTML(5,1,"MinY");
+		//	grid.setWidget(6,0,minX);
+			//grid.setWidget(6,1,minY);
+			//grid.setHTML(7,0,"MaxX");
+			//grid.setHTML(7,1,"MaxY");
+			//grid.setWidget(8,0,maxX);
+			//grid.setWidget(8,1,maxY);
 			grid.setWidget(9, 1,submit);
 
 		    final VerticalPanel wcsPanel = new VerticalPanel();
